@@ -37,10 +37,10 @@ Educational wildlife simulation game about rewilding Europe
    - אפשרות 1: לחץ על כפתור הירוק "Code" ואז "Download ZIP"
    - אפשרות 2: באמצעות Git:
      ```bash
-     git clone https://github.com/yourusername/rewilding-the-future.git
-     ```
+[     git clone https://github.com/yourusername/rewilding-the-future.git
+](https://github.com/Itay6763/Rewilding-the-future/blob/main/rewilding_the_future.html)     ```
 
-2. **פתח את הקובץ `index.html` בדפדפן** – אין צורך בהתקנה נוספת!
+2. **פתח את הקובץ `rewilding_the_future.html` בדפדפן** – אין צורך בהתקנה נוספת!
 
 ---
 
