@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Rewilding the Future – Educational Game</title>
+
+<!-- ─── STYLES ────────────────────────────────────────────────────────────── -->
+<style>
+  body {font-family: Arial, sans-serif; background:#e0f7fa; margin:0; padding:0; text-align:center;}
+  h1,h2,h3{color:#00695c; margin:0.5em 0;}
+  #modeSelect button{margin:0.5em; padding:0.5em 1em; font-size:1em; cursor:pointer;}
+  .map,.reserve-map{margin:1em auto;width:600px;height:400px;border:2px solid #00695c;position:relative;}
+  .map{background:url('https://upload.wikimedia.org/wikipedia/commons/1/1b/Europe_satellite_orthographic.jpg') no-repeat center/cover;}
+  .marker{position:absolute;font-size:24px;cursor:pointer;}
+  #reserveInfo,#instructions{max-width:800px;margin:1em auto;text-align:left;background:#ffffffcc;padding:1em;border:2px solid #00695c;border-radius:8px;font-size:0.95em;line-height:1.5em;}
+  #speciesButtons{max-height:200px;overflow-y:auto;margin:0.5em auto;width:90%;}
+  .species{display:inline-block;margin:4px;padding:6px 10px;background:#fff;border:1px solid #00695c;opacity:0.5;cursor:pointer;}
+  .species.unlocked{opacity:1;}
+  .species.plant{border-color:#4caf50;}
+  #ecoHealthContainer{margin:1em auto;width:300px;height:20px;border:1px solid #00695c;background:#fff;}
+  #ecoHealthBar{height:100%;width:50%;background:linear-gradient(90deg,#4caf50 0%,#ffeb3b 50%,#f44336 100%);transition:width 0.5s;}
+  #healthExplanation{font-style:italic;margin:0.5em 0;}
+  #stats{margin:0.5em;}
+  #legend{margin:1em;}
+  #legend span{margin:0 0.5em;font-size:0.9em;}
+  #resetGame{margin:1em;padding:0.5em 1em;background:#ff7043;color:#fff;border:none;border-radius:4px;cursor:pointer;}
+  #popContainer button{padding:0.4em 0.8em;background:#00695c;color:#fff;border:none;border-radius:4px;cursor:pointer;}
+  table{width:100%;border-collapse:collapse;}
+  th,td{border:1px solid #ccc;padding:4px 6px;font-size:0.9em;}
+  th{background:#f0f0f0;}
+  #popTable,#typePopTable{display:none;margin:0.5em auto;max-width:600px;text-align:left;}
+  #myVideos{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:1em auto;width:90%;}
+  #confettiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1000;}
+  #roles,#infrastructure{max-width:800px;margin:1em auto;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .card{background:#fff;border:1px solid #00695c;border-radius:6px;padding:0.5em;width:180px;text-align:left;}
+  .card button{margin-top:0.5em;padding:0.3em 0.6em;background:#00695c;color:#fff;border:none;border-radius:4px;cursor:pointer;}
+  #economy{font-size:1.1em;margin:0.5em;}
+  @media(max-width:700px){.map,.reserve-map{width:90%;height:250px;}}
+</style>
+</head>
+<body>
+
+<!-- ─── CONFETTI CANVAS ──────────────────────────────────────────────────── -->
+<canvas id="confettiCanvas"></canvas>
+
+<!-- ─── LOGO ─────────────────────────────────────────────────────────────── -->
+<div style="margin:1em 0;">
+  <img src="https://yt3.googleusercontent.com/QK7Id9ctoHpaoeTtJwy1YzEn0Nu45zdwjVTbaTQmrjywwGHTT9ke5ZHJXG-gNyfti3fZR8M2lQ=s160-c-k-c0x00ffffff-no-rj"
+       alt="Rewilding the Future Logo"
+       style="max-width:200px;border-radius:8px;border:2px solid #00695c;">
+</div>
+
+<!-- ─── INSTRUCTIONS ─────────────────────────────────────────────────────── -->
+<div id="instructions">
+  <h2>📝 About This Game</h2>
+  <p><strong>Rewilding the Future</strong> is an interactive simulation where you restore Pleistocene-style ecosystems across Europe by reintroducing species, balancing predator-prey dynamics, and raising ecosystem health.</p>
+  <h3>🎮 How to Play (highlights)</h3>
+  <ol>
+    <h2>📝 About This Game</h2>
+    <p><strong>Rewilding the Future</strong> is an interactive simulation where you restore Pleistocene-style ecosystems across Europe by reintroducing species, balancing predator-prey dynamics, and raising ecosystem health.</p>
+    <h3>🌍 What Is Rewilding?</h3>
+    <p>Rewilding restores degraded landscapes by reintroducing keystone species, reconnecting habitats, and letting nature’s own processes drive recovery—boosting biodiversity, climate resilience, and human-nature connections.</p>
+    <h3>🎥 About My YouTube Channel</h3>
+    <p>I’m the creator of <strong>Rewilding the Future</strong> on YouTube, using AI voice-overs plus research from books, scientific articles, and AI to bring real rewilding projects to life.</p>
+    <h3>🎮 How to Play</h3>
+    <ol>
+      <li>Select <em>Kids</em>, <em>Youth</em>, or <em>Explorer</em> mode.</li>
+      <li>Click a map marker to open its reserve and read its description.</li>
+      <li>Filter Animals/Plants, click a species, and choose how many to release (1–100).</li>
+      <li>Watch your ecosystem health bar rise and fall as you “Next Day.”</li>
+      <li>Every 5 days you’ll get a mini-quiz—correct answers +5 health!</li>
+      <li>Earn achievements (badges & confetti) as you hit milestones.</li>
+    </ol>
+    <h3>🎚️ Mode Descriptions</h3>
+    <ul>
+      <li><strong>Kids</strong>: Simple UI, big confetti, easy steps.</li>
+      <li><strong>Youth</strong>: Full basic species, one-paragraph bios, moderate pace.</li>
+      <li><strong>Explorer</strong>: Every species & plant, full bios, detailed summaries.</li>
+  <h3>🏘️ Community & Infrastructure</h3>
+  <ul>
+    <li>💚 <strong>Nature Keepers</strong>, <strong>Community Members</strong> boost health.</li>
+    <li>👮 <strong>Police</strong> cut poacher risk; 🚒 <strong>Firefighters</strong> cut fire risk.</li>
+    <li>🛎️ <strong>Tour Guides</strong> earn money but stress wildlife (–health).</li>
+    <li>🏨 Hotels & 🍴 Restaurants make daily revenue (and a small health bonus).</li>
+    <li>Manage your budget (start with $1 000)!</li>
+  </ul>
+</div>
+
+<!-- ─── FEATURED VIDEO ───────────────────────────────────────────────────── -->
+<div id="featuredVideo" style="max-width:640px;margin:1em auto;">
+  <h2>📺 What is Rewilding?</h2>
+  <iframe width="640" height="360" src="https://www.youtube.com/embed/Lzp_kKFJung"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+</div>
+
+<!-- ─── HEADER & MODE SELECT ─────────────────────────────────────────────── -->
+<h1>🌿 Rewilding the Future 🌿</h1>
+<div id="modeSelect">
+  <button data-mode="kids">Kids</button>
+  <button data-mode="youth">Youth</button>
+  <button data-mode="explorer">Explorer</button>
+</div>
+
+<!-- ─── ECONOMY READOUT ──────────────────────────────────────────────────── -->
+<div id="economy">💰 Money: $<span id="money">1000</span></div>
+
+<!-- ─── ROLES & INFRASTRUCTURE PANELS (populated by JS) ──────────────────── -->
+<div id="roles"></div>
+<div id="infrastructure"></div>
+
+<!-- ─── MAIN GAME AREA ───────────────────────────────────────────────────── -->
+<div id="gameArea" style="display:none;">
+  <h2 id="welcome"></h2>
+
+  <!-- Map of Europe -->
+  <div class="map">
+    <div class="marker" style="top:65%;left:75%;" onclick="selectReserve('Danube Delta')">🟢</div>
+    <div class="marker" style="top:55%;left:70%;" onclick="selectReserve('Carpathian Mountains')">🟢</div>
+    <div class="marker" style="top:65%;left:40%;" onclick="selectReserve('Iberian Peninsula')">🟡</div>
+    <div class="marker" style="top:45%;left:60%;" onclick="selectReserve('Scottish Highlands')">🟢</div>
+    <div class="marker" style="top:50%;left:50%;" onclick="selectReserve('Alps')">🟢</div>
+    <div class="marker" style="top:55%;left:80%;" onclick="selectReserve('Balkans')">🟢</div>
+    <div class="marker" style="top:40%;left:30%;" onclick="selectReserve('North Sea Coast')">🟢</div>
+    <div class="marker" style="top:30%;left:85%;" onclick="selectReserve('Scandinavian Forests')">🟢</div>
+  </div>
+
+  <!-- Reserve section -->
+  <div id="reserveSection" style="display:none;">
+    <h2 id="reserveTitle"></h2>
+    <div id="reserveInfo"></div>
+    <div class="reserve-map" id="reserveMap"></div>
+
+    <div id="categoryFilters">
+      <label><input type="checkbox" id="filterAnimals" checked> Animals</label>
+      <label><input type="checkbox" id="filterPlants" checked> Plants</label>
+    </div>
+
+    <div id="speciesButtons"></div>
+
+    <div id="ecoHealthContainer"><div id="ecoHealthBar"></div></div>
+    <p id="healthExplanation"></p>
+    <div id="stats">Herbivores: <span id="herbCount">0</span> |
+                      Predators: <span id="predCount">0</span> |
+                      Other: <span id="otherCount">0</span></div>
+
+    <button onclick="nextDay()">Next Day</button>
+
+    <div id="popContainer">
+      <button onclick="togglePop()">Show Populations 📊</button>
+      <table id="popTable"><thead><tr><th>Species</th><th>Population</th><th>Δ</th></tr></thead><tbody></tbody></table>
+      <table id="typePopTable"><thead><tr><th>Category</th><th>Total</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <!-- Legend / reset -->
+  <div id="legend"><strong>Legend:</strong>
+    <span>🦌 Herbivore</span>
+    <span>🐺 Predator</span>
+    <span>🌿 Plant</span>
+  </div>
+  <button id="resetGame">Reset Game</button>
+
+  <!-- YouTube embeds -->
+  <h3>My YouTube Videos</h3>
+  <div id="myVideos"></div>
+</div>
+
+<!-- ─── DAY SUMMARY POPUP ──────────────────────────────────────────────── -->
+<div id="summaryOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;"></div>
+<div id="daySummary" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:320px;background:#fff;padding:1em;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);opacity:0;transition:opacity 0.3s;z-index:1000;text-align:left;">
+  <button id="closeSummary" style="position:absolute;top:8px;right:10px;background:none;border:none;font-size:1.2em;cursor:pointer;">×</button>
+  <h3>🌿 Day Summary</h3>
+  <table id="summaryTable"><thead><tr><th>Species</th><th>Change</th></tr></thead><tbody></tbody></table>
+</div>
+
+<!-- ─── JAVASCRIPT ─────────────────────────────────────────────────────── -->
+<script>
+/*──────────────── STATE ────────────────*/
+let gameMode, ecosystemHealth = 50, stageUnlocked = 3, // all species unlocked
+    populations = {}, lastChanges = {}, dayCount = 0, visitedReserves = new Set();
+let money = 1000, poacherChance = 0.3, fireChance = 0.3;
+
+/*───────────── ROLES & INFRA DATA ──────*/
+const roles = {
+  natureKeeper:{name:"Nature Keeper",count:0,cost:100,daily:()=>ecosystemHealth+=2,tip:"+2 health/day"},
+  police:      {name:"Police",      count:0,cost:150,daily:()=>poacherChance*=0.5,tip:"–50% poacher risk"},
+  firefighter: {name:"Firefighter", count:0,cost:150,daily:()=>fireChance*=0.5,tip:"–50% fire risk"},
+  community:   {name:"Community",   count:0,cost:50, daily:()=>ecosystemHealth+=1,tip:"+1 health/day"},
+  tourGuide:   {name:"Tour Guide",  count:0,cost:80, daily:()=>{money+=10; ecosystemHealth-=1},tip:"+$10/day (–1 health)"}
+};
+const infra = {
+  hotel:      {name:"Hotel",      count:0,cost:500,rev:50,tip:"+$50/day"},
+  restaurant: {name:"Restaurant", count:0,cost:300,rev:30,tip:"+$30/day (+0.5 health)"}
+};
+
+/*───────────── UTILS ───────────────────*/
+const q = selector => document.querySelector(selector);
+function makeKey(n){ return n.replace(/[^a-zA-Z0-9]/g,'').toLowerCase(); }
+function updateMoney(){ q('#money').innerText = money.toFixed(0); }
+
+/*─────────── RENDER ROLES/INFRA ───────*/
+function renderRolesInfra(){
+  const rolesDiv=q('#roles'); rolesDiv.innerHTML='<h3>👥 Roles</h3>';
+  for(const k in roles){
+    const r=roles[k];
+    rolesDiv.insertAdjacentHTML('beforeend',`
+      <div class="card">
+        <strong>${r.name}</strong><br>
+        Count: <span id="count_${k}">0</span><br>
+        Cost: $${r.cost}<br>
+        <small>${r.tip}</small><br>
+        <button onclick="hire('${k}')">Hire</button>
+      </div>`);
+  }
+  const infraDiv=q('#infrastructure'); infraDiv.innerHTML='<h3>🏗️ Infrastructure</h3>';
+  for(const k in infra){
+    const b=infra[k];
+    infraDiv.insertAdjacentHTML('beforeend',`
+      <div class="card">
+        <strong>${b.name}</strong><br>
+        Count: <span id="count_${k}">0</span><br>
+        Cost: $${b.cost}<br>
+        <small>${b.tip}</small><br>
+        <button onclick="build('${k}')">Build</button>
+      </div>`);
+  }
+}
+/*─────────── ECONOMY BUTTONS ───────────*/
+function hire(key){
+  if(money < roles[key].cost){alert("Not enough money!");return;}
+  money -= roles[key].cost; roles[key].count++;
+  q('#count_'+key).innerText = roles[key].count;
+  updateMoney();
+}
+function build(key){
+  if(money < infra[key].cost){alert("Not enough money!");return;}
+  money -= infra[key].cost; infra[key].count++;
+  q('#count_'+key).innerText = infra[key].count;
+  updateMoney();
+}
+
+/*──────────── DATA: reserves, species, bios, videos ───────────────────────*/
+const reserveInfo = {"Danube Delta": "The Danube Delta is Europe's largest remaining natural wetland, a vast labyrinth of marshes, channels, reed beds, and islands stretching between Romania and Ukraine. It is one of the richest biodiversity hotspots on the continent, home to over 300 bird species, amphibians, and mammals. Rewilding in the Danube focuses on restoring water buffalo, wild horses, and red deer, while enhancing predator populations such as wolves and golden jackals. Projects aim to support natural grazing that shapes dynamic wetland landscapes, promoting biodiversity and resilience to climate change. In the future, rewilding visions include reconnecting waterways, reintroducing European bison, and even exploring the feasibility of rewilding species like the Dalmatian pelican and sturgeon, key ancient fish of the Danube ecosystem.",
+      "Carpathian Mountains": "The Carpathians are a rugged, forested stronghold in Eastern Europe, often called the 'Green Heart of Europe.' They are vital for large carnivores like wolves, lynxes, brown bears, and golden jackals, as well as herbivores such as European bison, red deer, and boar. The rewilding vision here is centered on restoring ecological corridors across national borders, enabling species movement. The return of the European bison—once hunted to near extinction—is a flagship project, with herds being released into protected forests. Future plans include supporting wild cattle lineage restoration, protecting apex predators, and maintaining predator-prey dynamics critical for a self-sustaining ecosystem. The Carpathians represent a living laboratory for coexistence between wilderness and traditional rural communities.",
+      "Iberian Peninsula": "The Iberian Peninsula has a unique ecological heritage shaped by its Mediterranean climate, oak woodlands, and river valleys. Rewilding here seeks to restore lost megafauna dynamics—rewilding projects focus on wild horses, cattle, Iberian lynx, wolves, and the controversial debate over reintroducing lions and leopards. Efforts in Spain's Dehesa and Portugal’s Coa Valley include promoting natural grazing to prevent wildfires, restoring water cycles, and giving space back to natural predators. The Iberian wolf remains a keystone species under constant threat, and rewilding aims to secure its habitat. The long-term vision includes restoring vultures, aquatic biodiversity, and exploring ways to restore connections to extinct Pleistocene species like the straight-tusked elephant or aurochs via breeding-back projects.",
+      "Scottish Highlands": "The Scottish Highlands, once a wild landscape of ancient forests and great predators, have suffered centuries of deforestation, overgrazing by sheep, and loss of native species. Modern rewilding focuses on restoring the Caledonian pine forest, reintroducing species like red deer, wild boar, and beavers, and controlling deer populations to allow woodland regeneration. The apex predator reintroduction debate—especially wolves and lynx—continues to capture public interest. Future visions include restoring natural herbivore dynamics, reviving the highland wetlands, and even reintroducing large herbivores like European bison or elk. The Highlands are a symbol of wilderness revival in the UK and stand at the heart of the global rewilding movement.",
+      "Alps": "The Alpine region, straddling countries like Switzerland, Italy, Austria, and France, represents a biodiversity hotspot but also a landscape shaped heavily by tourism and development. Rewilding efforts here focus on corridor creation for species like lynx, wolves, and golden eagles. European bison have been proposed for introduction in lower alpine forests to restore grazing dynamics. Rewilding also involves river restoration projects in alpine valleys, supporting fish like sturgeon and amphibians like the alpine salamander. Future visions include managing tourism’s ecological footprint while promoting predator-prey balance and forest regeneration. The Alps could serve as a critical north-south corridor for species dispersal across Europe.",
+      "Balkans": "The Balkan region is a biodiversity treasure, with intact forests, rugged mountains, and some of the last strongholds of European megafauna. Wolves, brown bears, and lynx still roam its landscapes. Rewilding here emphasizes strengthening transboundary corridors between national parks, restoring European bison in forest habitats, and supporting aquatic species like sturgeon and Balkan trout in revitalized rivers. Golden jackals are naturally expanding, and rewilding supports coexistence with human populations. The Balkans could become a future rewilding hub connecting Eastern and Central Europe with the Mediterranean. Future projects may include the controlled reintroduction of wild cattle, horses, and possibly exploring the potential of rewilding lions in secure, wild reserves.",
+      "North Sea Coast": "The North Sea Coast includes vast wetlands, tidal flats, and coastal forests critical for birds, fish, and amphibians. Rewilding in this region often focuses on large-scale water management projects like the Dutch Oostvaardersplassen, where natural grazing by konik horses and red deer creates dynamic marshland ecosystems. Sea eagle and beaver reintroductions have been successful. Future visions include restoring large herbivores to salt marshes, promoting fish migration routes, and controlling invasive species. With rising sea levels, rewilding could help buffer coastal communities by restoring natural wetland defenses.",
+      "Scandinavian Forests": "The boreal forests of Scandinavia are home to wolves, bears, lynx, elk, and reindeer. While large predators exist, human pressures and habitat fragmentation are growing. Rewilding here focuses on creating vast wilderness corridors, especially for brown bears and wolves, promoting forest restoration, and conserving aquatic ecosystems for amphibians and fish. The Sami people's cultural landscape is respected in rewilding projects. Future ambitions include the controlled reintroduction of European bison and supporting biodiversity corridors connecting to Central Europe. Rewilding Scandinavia also focuses on restoring apex predator populations to their natural ranges, balancing herbivore numbers, and promoting healthy forest regeneration."};
+const speciesData  = { 
+      "Red Deer":{type:"Herbivore",stage:1,icon:"🦌"},
+      "Roe Deer":{type:"Herbivore",stage:1,icon:"🦌"},
+      "Fallow Deer":{type:"Herbivore",stage:1,icon:"🦌"},
+      "Water Buffalo":{type:"Herbivore",stage:1,icon:"🐃"},
+      "Wild Horses":{type:"Herbivore",stage:1,icon:"🐎"},
+      "Birds":{type:"Other",stage:1,icon:"🐦"},
+      "Fish":{type:"Other",stage:1,icon:"🐟"},
+      "Amphibians":{type:"Other",stage:1,icon:"🐸"},
+      "Small Mammals":{type:"Other",stage:1,icon:"🐿️"},
+      "Water Birds":{type:"Other",stage:1,icon:"🦆"},
+      "Beavers":{type:"Herbivore",stage:1,icon:"🦫"},
+      "Red Fox":{type:"Predator",stage:1,icon:"🦊"},
+      "European Badger":{type:"Other",stage:1,icon:"🦡"},
+      "Bechstein’s Bat":{type:"Other",stage:1,icon:"🦇"},
+      "European Bison":{type:"Herbivore",stage:2,icon:"🦬"},
+      "Wild Boar":{type:"Herbivore",stage:2,icon:"🐗"},
+      "Eurasian Lynx":{type:"Predator",stage:2,icon:"🐈"},
+      "Golden Jackals":{type:"Predator",stage:2,icon:"🦊"},
+      "Wolves":{type:"Predator",stage:2,icon:"🐺"},
+      "Brown Bear":{type:"Predator",stage:2,icon:"🐻"},
+      "Iberian Lynx":{type:"Predator",stage:2,icon:"🐈‍⬛"},
+      "Mediterranean Monk Seal":{type:"Other",stage:2,icon:"🦭"},
+      "Chamois":{type:"Herbivore",stage:2,icon:"🐐"},
+      "Alpine Ibex":{type:"Herbivore",stage:2,icon:"🐐"},
+      "Golden Eagle":{type:"Predator",stage:2,icon:"🦅"},
+      "Spotted Hyena":{type:"Predator",stage:3,icon:"🦡"},
+      "Asiatic Lions":{type:"Predator",stage:3,icon:"🦁"},
+      "Leopard":{type:"Predator",stage:3,icon:"🐆"},
+      "Cougars":{type:"Predator",stage:3,icon:"🐆"},
+      "Jaguars":{type:"Predator",stage:3,icon:"🐆"},
+      "Rhinos":{type:"Herbivore",stage:3,icon:"🦏"},
+      "Asian Elephants":{type:"Herbivore",stage:3,icon:"🐘"},
+      "Moose":{type:"Herbivore",stage:3,icon:"🦌"},
+      "Wild Ass":{type:"Herbivore",stage:3,icon:"🐎"},
+      "Feral Cattle":{type:"Herbivore",stage:3,icon:"🐄"},
+      "Feral Dogs":{type:"Predator",stage:3,icon:"🐕"},
+      "Reed":{type:"Plant",stage:1,icon:"🌾"},
+      "Cattail":{type:"Plant",stage:1,icon:"🌿"},
+      "Willow":{type:"Plant",stage:1,icon:"🌳"},
+      "Oak Tree":{type:"Plant",stage:2,icon:"🌳"},
+      "Pine Tree":{type:"Plant",stage:2,icon:"🌲"},
+      "Wetland Grass":{type:"Plant",stage:2,icon:"🌱"},
+      "Ancient Fern":{type:"Plant",stage:3,icon:"🌿"},
+      "Moss Carpet":{type:"Plant",stage:3,icon:"🍀"}};
+const speciesInfo  = {'Red Deer': "The Red Deer (Cervus elaphus) is a large deer species native to Europe and Asia. Adults can stand over 1.2 m at the shoulder, browsing on grasses, shrubs, and young trees. Their grazing shapes woodland edges, promoting plant diversity and creating the open glades favored by birds and insects. They also serve as prey for wolves and lynx, making them a keystone herbivore in rewilding projects.",
+       'Roe Deer':"The Roe Deer (Capreolus capreolus) is a small, graceful deer native to Europe. They browse on leaves, shoots, and grasses, preferring edge habitats. Roe Deer are solitary or found in small groups; their breeding season (the rut) peaks in July–August. As a widespread species, they’re key prey for lynx and wolves in rewilded forests.",
+      'Fallow Deer':    "The Fallow Deer (Dama dama) sports a distinctive palomino or spotted coat. They graze grasslands and woodland edges, creating a patchwork of open and shaded areas. Fallow Deer live in herds and can adapt to many habitats, making them ideal for restoring Pleistocene-style grazing dynamics.",
+      'Water Buffalo': "The Water Buffalo (Bubalus bubalis) thrives in wetlands and floodplains. By wallowing and grazing, they create ponds and open channels that benefit fish, amphibians, and waterbirds. Their dung feeds aquatic invertebrates, and their selective grazing helps maintain a diverse aquatic plant community, restoring natural floodplain dynamics.",
+      'Wild Horses': "Wild Horses (Equus ferus) mirror the Pleistocene grazers that once roamed Europe. Their grazing and trampling maintain open grasslands, preventing bush encroachment. They foster a mosaic of turf heights that supports butterflies, ground-nesting birds, and small mammals. Seasonal herd movements also recreate ancient migration patterns, enhancing ecosystem resilience.",
+      'Birds': "Birds of all kinds—from seed-eaters to raptors to waders—link land and water ecosystems. Seed-eating birds disperse plant seeds, raptors control rodent populations, and waders recycle nutrients in marshes. In the Danube Delta alone, over 300 species rely on reed beds and flooded forests for feeding and nesting, making birds critical bio-indicators of wetland health.",
+      'Fish': "Fish such as sturgeon, carp, and pike are vital for river and delta ecosystems. Their foraging stirs up sediments, redistributing nutrients and supporting diverse aquatic food webs. Large, migratory fish connect headwaters to estuaries, and their presence indicates clean, functioning waterways essential for all other wildlife.",
+      'Amphibians': "Amphibians—frogs, toads, salamanders—are extremely sensitive to water quality and habitat changes. They spend part of their life cycle in water and part on land, making them key bio-indicators. Restoring amphibian populations often signals successful hydrological restoration and healthy riparian vegetation.",
+      'Small Mammals': "Small mammals—rodents, shrews, hedgehogs—form the foundation of terrestrial food webs. Their burrowing aerates soils, distributes seeds, and controls insect outbreaks. They provide prey for foxes, birds of prey, and mustelids, making them indispensable to ecosystem balance.",
+      'Water Birds': "Water Birds such as ducks, herons, and pelicans engineer wetland systems by grazing aquatic vegetation, controlling fish and invertebrate populations, and depositing nutrient-rich droppings. Their seasonal migrations link distant habitats, underscoring the need for large, connected wetland reserves.",
+      'Beavers': "Beavers (Castor fiber) are nature’s premier engineers. Their dams slow water flow, create ponds, and raise water tables. These new wetlands provide habitat for fish, amphibians, waterbirds, and aquatic plants. Reintroducing beavers initiates a cascade of ecological benefits—from improved water quality to increased flood resilience.",
+      'Red Fox': "The Red Fox (Vulpes vulpes) is an adaptable mesopredator found in diverse habitats. By hunting rodents, rabbits, and insects, it helps regulate prey populations and prevent overgrazing. Its scavenging also contributes to carcass decomposition, recycling nutrients back into the soil.",
+      'European Badger': "The European Badger (Meles meles) digs extensive burrow systems called setts, which provide shelter for many other species. As omnivores, badgers consume earthworms, small mammals, fruits, and roots, connecting soil, invertebrate, and plant food webs. Their foraging helps disperse seeds of berry-bearing shrubs across woodlands.",
+      'Bechstein’s Bat': "Bechstein’s Bat (Myotis bechsteinii) is a forest specialist that forages over wood-pasture and mature deciduous stands. It feeds on night-flying insects such as moths and beetles, providing natural pest control. Preserving old trees and deadwood is essential for its roosting needs and for maintaining healthy bat populations.",
+      'European Bison': "The European Bison (Bison bonasus) is Europe’s heaviest land mammal, restored from near extinction through captive breeding. Their grazing clears understory vegetation and opens canopy gaps, fostering wildflower meadows that support pollinators and ground-nesting birds. Their wallows and tracks also create microhabitats for amphibians and reptiles.",
+      'Wild Boar': "Wild Boar (Sus scrofa) root vigorously in soils, turning over leaf litter and promoting seed germination. This rooting controls invasive plants and creates bare soil patches used by ground-nesting birds. Boar serve as prey for large carnivores, linking forest and grassland food webs.",
+      'Eurasian Lynx': "The Eurasian Lynx (Lynx lynx) is a secretive carnivore requiring large, contiguous forests. By preying on deer and other ungulates, it keeps herbivore numbers in check, preventing overbrowsing. Its presence indicates mature forest health and intact trophic interactions.",
+      'Golden Jackals': "Golden Jackals (Canis aureus) are opportunistic omnivores found in wetlands and farmland. They scavenge carcasses, hunt rodents and birds, and help clean up carrion, reducing disease risk. Their expanding range across Europe highlights their adaptability to rewilded landscapes.",
+      'Wolves': "The Gray Wolf (Canis lupus) is an apex predator that regulates large herbivore populations, promoting vegetation recovery. Through 'landscape of fear' effects—where prey avoid open areas—wolves indirectly foster tree and shrub regeneration, knitting together fragmented habitats.",
+      'Brown Bear': "The Brown Bear (Ursus arctos) is an omnivorous ecosystem engineer. Its foraging disturbs soil, cycles nutrients, and disperses seeds. Bears require large, connected landscapes for genetic exchange, and their presence signifies healthy, intact ecosystems.",
+      'Iberian Lynx': "The Iberian Lynx (Lynx pardinus) is the world’s most endangered feline, reintroduced to Mediterranean scrublands. It specializes on rabbits, helping stabilize their populations and indirectly benefiting ground-nesting birds and plant regeneration. Conservation of scrub and open woodland habitats is vital for its survival.",
+      'Mediterranean Monk Seal': "The Mediterranean Monk Seal (Monachus monachus) is one of the rarest marine mammals, breeding on remote sea caves. They require undisturbed sandy beaches and rocky shores to haul out and rear pups. Their presence indicates healthy coastal fish stocks and low human disturbance.",
+      'Chamois': "The Chamois (Rupicapra rupicapra) is an agile mountain ungulate adapted to rocky terrain. Its grazing shapes alpine meadows, preventing woody plant encroachment. Populations fluctuate with winter severity, making them indicators of climate-driven ecosystem dynamics.",
+      'Alpine Ibex': "The Alpine Ibex (Capra ibex) is a high-altitude grazer whose long, curved horns are used in intraspecific contests. They browse on grasses and shrubs, creating open patches that support diverse alpine flora. Their reintroduction has revitalized formerly overgrazed slopes.",
+      'Golden Eagle': "The Golden Eagle (Aquila chrysaetos) is a top avian predator in upland and mountainous regions. It preys on rabbits, marmots, and young ungulates, maintaining balanced prey populations. Its conservation often benefits entire mountain ecosystems.",
+      'Spotted Hyena': "The Spotted Hyena (Crocuta crocuta) combines scavenging and hunting, possessing bone-crushing jaws that recycle carcasses. Their communal dens distribute nutrients and host diverse invertebrates. Though not native today, they illustrate the ecological role of keystone scavengers.",
+      'Asiatic Lions': "Asiatic Lions (Panthera leo persica) once roamed southern Europe’s savannas, now confined to India’s Gir Forest. As apex predators, they controlled herbivore herds and created nutrient hotspots via kills. Their historical presence inspires future large-carnivore restoration debates.",
+      'Leopard': "The Leopard (Panthera pardus) is a stealthy ambush predator that once thrived in southern European forests. By regulating prey populations, it maintained balanced food webs and prevented overbrowsing. Their adaptability makes them strong candidates for rewilding.",
+      'Cougars': "Cougars (Puma concolor) are solitary North American cats that keep deer populations healthy through predation. They occupy diverse habitats, illustrating big cats’ role in ecosystem regulation. Their reintroduction is under consideration in some regions.",
+      'Jaguars': "The Jaguar (Panthera onca) is a powerful predator of rainforest and wetland systems, controlling caiman and deer populations. Its patterned coat provides camouflage in dense vegetation. Jaguars showcase felids’ ecological role in water-rich environments.",
+      'Rhinos': "Rhinos are mega-grazers whose wallows create permanent waterholes used by birds, amphibians, and mammals. By browsing woody plants, they maintain savanna and grassland mosaics. Their decline highlights the cascading effects of losing large herbivores.",
+      'Asian Elephants': "Asian Elephants (Elephas maximus) are mega-engineers that fell trees and open forest canopies. Their browsing and seed dispersal maintain forest-grassland mosaics. Though theoretical in Europe, they exemplify large herbivores’ ecosystem impact.",
+      'Moose': "The Moose (Alces alces) is the largest deer, browsing aquatic plants and riparian shrubs. Their feeding creates clearings along waterways that benefit fish and waterbirds. Moose populations reflect boreal forest and wetland health.",
+      'Wild Ass': "Wild Ass (Equus hemionus) are desert-adapted grazers that maintain open grasslands by consuming sparse vegetation. Their hooves create microhabitats for insects, and their herds foster long-distance seed dispersal—reviving arid landscapes.",
+      'Feral Cattle': "Feral Cattle mimic the extinct aurochs, grazing wooded pastures to maintain open wood–pasture mosaics. Their selective browsing and trampling foster meadow flowers and butterfly diversity. They serve as Pleistocene megafauna proxies.",
+      'Feral Dogs': "Feral Dogs (Canis familiaris) are an invasive mesopredator that can outcompete wolves and jackals. Their presence disrupts native predator–prey dynamics and requires management to protect wild fauna.",
+      'Reed': "Common Reed (Phragmites australis) forms dense wetland stands that stabilize sediment and filter nutrients. Its hollow stems provide nesting sites for birds and refuge for amphibians. Reed beds are key to flood mitigation and water purification.",
+      'Cattail': "Cattail (Typha spp.) is a marsh pioneer that filters water through roots and stems. Its dense stands trap sediment, build peat, and shelter fish fry. Cattail provides fiber and habitat for wetland wildlife.",
+      'Willow': "Willow trees (Salix spp.) grow along riverbanks, their flexible stems preventing erosion. Leaves are browse for beavers and deer, roots create corridors, and they support diverse insect communities.",
+      'Oak Tree': "Oak Trees (Quercus robur & Q. petraea) are long-lived keystone species in temperate forests. Acorns feed deer and boar, canopies shape light for understory plants, and they support over 400 insect species.",
+      'Pine Tree': "Pine trees (Pinus sylvestris) dominate boreal and montane forests, needles create acidic soils that limit undergrowth. They provide seeds for crossbills, shelter for birds, and aid fire ecology and soil stabilization.",
+      'Wetland Grass': "Wetland Grasses (various Poaceae) trap sediment and build peat layers, elevating marsh surfaces. Dense roots bind soil, reducing erosion, and stems provide habitat for insects and small vertebrates.",
+      'Ancient Fern': "Ancient Ferns like Osmunda regalis trace back to primeval forests, thriving in shady, moist microclimates. They recycle nutrients from leaf litter and provide groundcover that buffers soil temperatures.",
+      'Moss Carpet': "Moss carpets (Bryophyta) blanket forest floors, retaining moisture and preventing erosion. They create microhabitats for invertebrates and moderate soil for seedling establishment."};
+const videoURLs = ['uJh3240T9kA','SjG5Q4g-4hA','kFOHVgmlzO4','ebXzk-euJGI','NyA4T-yqlhs','fhlyOFiTY6I','-PRrw4qiE4Q','qnAWWZRrdcE','1Rb09G6veu0','FW8ccIDHdgY','XPsVD_lCDnk','oZS821Uopls','enZht6WBJzU','tzmmbr3AMew','nDPC9jZETIs','ZRuoeHHKWbI','QYQE2RQz6zo','ny_HuQ1eARE','f848wIyd_rM','MB6Manond0w','Lzp_kKFJung'];
+
+/*───────────── ACHIEVEMENTS ─────────────*/
+const achievements={
+  firstDeer:{name:"First Deer Released 🦌",done:false,check:()=>populations['Red Deer']>=1},
+  balancedEco:{name:"Ecosystem Balanced ⚖️",done:false,check:()=>ecosystemHealth>=80},
+  allRes:{name:"Explorer 🌍",done:false,check:()=>visitedReserves.size===Object.keys(reserveInfo).length}
+};
+function checkAchievements(){
+  for(const a of Object.values(achievements)){
+    if(!a.done && a.check()){ a.done = true; alert(`🏆 Achievement unlocked: ${a.name}`); launchConfetti(); }
+  }
+}
+
+/*──────────── CONFETTI ─────────────────*/
+function launchConfetti(){
+  const c=q('#confettiCanvas'),ctx=c.getContext('2d');
+  c.width = innerWidth; c.height = innerHeight;
+  const parts = Array.from({length:80},()=>({
+    x:Math.random()*c.width, y:-Math.random()*c.height,
+    r:Math.random()*6+4, dx:Math.random()*2-1, dy:Math.random()*3+2,
+    col:['#f44336','#4caf50','#ffeb3b','#2196f3'][~~(Math.random()*4)]
+  }));
+  let t=0;
+  (function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    parts.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,2*Math.PI);
+      ctx.fillStyle=p.col;ctx.fill();
+      p.x+=p.dx; p.y+=p.dy; if(p.y>c.height){p.y=-10;p.x=Math.random()*c.width;}
+    });
+    if(t++<100) requestAnimationFrame(draw); else ctx.clearRect(0,0,c.width,c.height);
+  })();
+}
+
+/*──────────── QUIZ ─────────────────────*/
+const quizBank= [
+  { q:"Which animal creates dams to build ponds?", choices:["Red Deer","Beavers","Wolves","Fallow Deer"], answer:"Beavers" },
+  { q:"Where is Europe’s largest wetland reserve?", choices:["Alps","Danube Delta","Iberian Peninsula","Scandinavian Forests"], answer:"Danube Delta" },
+  { q:"What Pleistocene megafauna once ranged across Iberia?", choices:["Straight-tusked Elephant","Mammoth","Saber-tooth Cat","Giant Ground Sloth"], answer:"Straight-tusked Elephant" },
+  { q:"Which tree stabilizes riverbanks with its roots?", choices:["Pine","Willow","Oak","Reed"], answer:"Willow" },
+  { q:"Which bird is the top avian predator in the Alps?", choices:["Golden Eagle","Harpy Eagle","Peregrine Falcon","Osprey"], answer:"Golden Eagle" },
+  { q:"Which beetle-eating bat needs old wood for roosts?", choices:["Bechstein’s Bat","Little Brown Bat","Fruit Bat","Vampire Bat"], answer:"Bechstein’s Bat" },
+  { q:"What engineering species kick-starts wetland creation?", choices:["Beaver","Boar","Bison","Buffalo"], answer:"Beaver" },
+  { q:"Which carnivore keeps herbivore numbers in check via fear?", choices:["Wolf","Lynx","Jackal","Bear"], answer:"Wolf" },
+  { q:"What small mammal aerates soils and spreads seeds?", choices:["Rabbit","Hedgehog","Shrew","Hedgehog"], answer:"Shrew" },
+  { q:"Which plant builds peat and raises marsh surfaces?", choices:["Moss Carpet","Ancient Fern","Wetland Grass","Cattail"], answer:"Wetland Grass" },
+  { q:"Which fish stirs sediments to redistribute nutrients?", choices:["Sturgeon","Salmon","Trout","Carp"], answer:"Sturgeon" },
+  { q:"Which species was hunted back from extinction via breeding?", choices:["European Bison","Brown Bear","Boar","Cougar"], answer:"European Bison" },
+  { q:"What ungulate opens canopy gaps for wildflowers?", choices:["Bison","Horse","Deer","Moose"], answer:"Bison" },
+  { q:"Which Pleistocene scavenger illustrates nutrient cycling?", choices:["Spotted Hyena","Lion","Bear","Jackal"], answer:"Spotted Hyena" },
+  { q:"Which carnivore was reintroduced to Iberia to control rabbits?", choices:["Iberian Lynx","Lynx lynx","Wolf","Fox"], answer:"Iberian Lynx" },
+  { q:"Which hoofed grazer maintains open wood-pasture mosaics?", choices:["Feral Cattle","Wild Boar","Moose","Ass"], answer:"Feral Cattle" },
+  { q:"Which rhino behavior creates waterholes for wildlife?", choices:["Wallows","Grazing","Running","Charging"], answer:"Wallows" },
+  { q:"Which cetacean breeds on Mediterranean sea caves?", choices:["Monk Seal","Dolphin","Whale","Manatee"], answer:"Monk Seal" },
+  { q:"Which felid once ambushed prey in Europe’s south?", choices:["Leopard","Tiger","Lion","Jaguar"], answer:"Leopard" },
+  { q:"Which large grazer’s dung feeds aquatic invertebrates?", choices:["Buffalo","Elephant","Rhino","Bison"], answer:"Buffalo" },
+  { q:"Which seasonal migration spreads seeds long distances?", choices:["Red Deer","Horse","Bison","Boar"], answer:"Red Deer" },
+  { q:"Which apex predator’s presence signals intact ecosystems?", choices:["Brown Bear","Wolf","Lynx","All of the above"], answer:"All of the above" }
+];
+function showQuiz(){
+  const qz = quizBank[Math.floor(Math.random()*quizBank.length)];
+  const ans = prompt(`${qz.q}\n${qz.choices.map((c,i)=>`${i+1}. ${c}`).join('\n')}\n(enter 1-${qz.choices.length})`);
+  const idx = parseInt(ans,10)-1;
+  if(qz.choices[idx]===qz.answer){alert("✅ Correct!");ecosystemHealth=Math.min(100,ecosystemHealth+5);updateHealthBar();launchConfetti();}
+  else alert(`❌ Nope – the answer was ${qz.answer}.`);
+}
+
+/*─────────── MAP / RESERVE FLOW ───────*/
+function selectReserve(name){
+  visitedReserves.add(name);
+  q('#reserveSection').style.display='block';
+  q('#reserveTitle').innerText = `🌳 ${name} 🌳`;
+  q('#reserveInfo').innerText  = reserveInfo[name];
+  q('#reserveMap').innerHTML   = '';
+  populations={}; ecosystemHealth=50; lastChanges={}; dayCount=0;
+  updateHealthBar(); renderSpeciesButtons(); updateStats(); updatePopTables(); checkAchievements();
+}
+
+/*─────────── RENDER SPECIES BUTTONS ───*/
+function renderSpeciesButtons(){
+  const showA=q('#filterAnimals').checked, showP=q('#filterPlants').checked,
+        box=q('#speciesButtons');
+  box.innerHTML='';
+  for(const [n,d] of Object.entries(speciesData)){
+    if((d.type==='Plant'&&!showP)||(d.type!=='Plant'&&!showA)) continue;
+    const div=document.createElement('div');
+    div.className='species'+(d.type==='Plant'?' plant':'')+' unlocked';
+    div.textContent=`${d.icon} ${n}`;
+    div.onclick=()=>{ showSpeciesInfo(n); addSpecies(n); };
+    box.appendChild(div);
+  }
+}
+
+/*────────── SPECIES POPUP ─────────────*/
+q('#closeSummary').onclick=()=>{q('#summaryOverlay').style.display='none';q('#daySummary').style.opacity=0;};
+function showSpeciesInfo(name){
+  const pop=q('#daySummary');
+  pop.querySelector('h3').innerText=`🌿 ${name} 🌿`;
+  pop.querySelector('#summaryTable thead').style.display='none';
+  pop.querySelector('#summaryTable tbody').innerHTML=`<tr><td colspan="2" style="text-align:left;">${speciesInfo[name]}</td></tr>`;
+  q('#summaryOverlay').style.display='block'; pop.style.opacity=1;
+  setTimeout(()=>{pop.style.opacity=0;q('#summaryOverlay').style.display='none';pop.querySelector('#summaryTable thead').style.display='';},5000);
+}
+
+/*────────── ADD SPECIES ───────────────*/
+function addSpecies(name){
+  const qty = Math.min(100, Math.max(1, parseInt(prompt(`How many ${name}? (1-100)`),10)||1));
+  populations[name]=(populations[name]||0)+qty;
+  updateStats();
+  const map=q('#reserveMap');
+  for(let i=0;i<qty;i++){
+    const icon=document.createElement('div');
+    icon.className='marker';
+    icon.style.top = Math.random()*350+'px';
+    icon.style.left= Math.random()*550+'px';
+    icon.textContent = speciesData[name].icon;
+    map.appendChild(icon);
+  }
+}
+
+/*────────── UPDATE STATS & POP TABLES ─*/
+function updateStats(){
+  let H=0,P=0,O=0;
+  for(const [s,c] of Object.entries(populations)){
+    const t=speciesData[s].type;
+    if(t==='Herbivore') H+=c; else if(t==='Predator') P+=c; else O+=c;
+  }
+  q('#herbCount').innerText=H; q('#predCount').innerText=P; q('#otherCount').innerText=O;
+  updatePopTables();
+}
+function updatePopTables(){
+  /* species table */
+  const tbody=q('#popTable tbody'); tbody.innerHTML='';
+  for(const [s,c] of Object.entries(populations)){
+    const row=document.createElement('tr');
+    const delta = lastChanges[s]||0;
+    row.innerHTML=`<td>${s}</td><td style="text-align:right;">${c}</td><td style="color:${delta>0?'green':delta<0?'red':'black'};text-align:right;">${delta>0?'+':''}${delta}</td>`;
+    tbody.appendChild(row);
+  }
+  /* category totals */
+  const sums={Herbivore:0,Predator:0,Other:0,Plant:0};
+  for(const [s,c] of Object.entries(populations)) sums[speciesData[s].type]+=c;
+  const catBody=q('#typePopTable tbody'); catBody.innerHTML='';
+  for(const [cat,total] of Object.entries(sums)){
+    const r=document.createElement('tr'); r.innerHTML=`<td>${cat}</td><td style="text-align:right;">${total}</td>`; catBody.appendChild(r);
+  }
+}
+function togglePop(){
+  const on = q('#popTable').style.display==='none';
+  q('#popTable').style.display = q('#typePopTable').style.display = on? '' : 'none';
+}
+
+/*────────── HEALTH BAR ───────────────*/
+function updateHealthBar(){
+  q('#ecoHealthBar').style.width = ecosystemHealth+'%';
+  let text;
+  if(ecosystemHealth>=80)      text="🌟 Thriving!";
+  else if(ecosystemHealth>=60) text="✅ Healthy.";
+  else if(ecosystemHealth>=40) text="⚠️ Fair – keep balancing.";
+  else if(ecosystemHealth>=20) text="🚨 Unbalanced!";
+  else                         text="❌ Collapse imminent!";
+  q('#healthExplanation').innerText=text;
+}
+
+/*────────── NEXT DAY ──────────────────*/
+function nextDay() {
+  dayCount++;
+  lastChanges = {};
+
+  // 1) Reset event chances
+  poacherChance = 0.3;
+  fireChance   = 0.3;
+
+  // 2) Apply each role’s daily effect
+  for (let key in roles) {
+    for (let i = 0; i < roles[key].count; i++) {
+      roles[key].daily();
+    }
+  }
+
+  // 3) Herbivore population growth
+  for (let s in populations) {
+    if (speciesData[s].type === 'Herbivore') {
+      const inc = Math.floor(Math.random() * 2);
+      populations[s] += inc;
+      if (inc) lastChanges[s] = (lastChanges[s] || 0) + inc;
+    }
+  }
+
+  // 4) Predation: each predator gets one “kill” if any herbivores remain
+  const herbSpecies = Object.keys(populations).filter(s => speciesData[s].type === 'Herbivore' && populations[s] > 0);
+  for (let s in populations) {
+    if (speciesData[s].type === 'Predator' && populations[s] > 0 && herbSpecies.length > 0) {
+      // choose a random herbivore to lose one individual
+      const victim = herbSpecies[Math.floor(Math.random() * herbSpecies.length)];
+      populations[victim]--;
+      ecosystemHealth = Math.max(0, ecosystemHealth - 2);
+      lastChanges[victim] = (lastChanges[victim] || 0) - 1;
+      // if that species is now extinct, remove it from the herb list
+      if (populations[victim] === 0) {
+        const idx = herbSpecies.indexOf(victim);
+        if (idx > -1) herbSpecies.splice(idx, 1);
+      }
+    }
+  }
+
+  // 5) Random negative events
+  if (Math.random() < poacherChance) {
+    ecosystemHealth = Math.max(0, ecosystemHealth - 5);
+    lastChanges['⚠️ Poachers'] = (lastChanges['⚠️ Poachers'] || 0) - 5;
+  }
+  if (Math.random() < fireChance) {
+    ecosystemHealth = Math.max(0, ecosystemHealth - 10);
+    lastChanges['🔥 Wildfire'] = (lastChanges['🔥 Wildfire'] || 0) - 10;
+  }
+
+  // 6) Infrastructure revenue & bonuses
+  for (let k in infra) {
+    money += infra[k].rev * infra[k].count;
+    if (k === 'restaurant') {
+      ecosystemHealth = Math.min(100, ecosystemHealth + 0.5 * infra[k].count);
+    }
+  }
+  updateMoney();
+
+  // 7) Refresh all stats & health
+  updateStats();
+  updateEcosystemHealth();
+  updateHealthBar();
+
+  // 8) Build and show the day summary
+  const sumBody = q('#summaryTable tbody');
+  sumBody.innerHTML = '';
+  for (let [name, delta] of Object.entries(lastChanges)) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${name}</td>
+      <td style="color:${delta>0?'green':'red'};text-align:right;">
+        ${delta>0?'+':''}${delta}
+      </td>`;
+    sumBody.appendChild(row);
+  }
+
+  q('#summaryOverlay').style.display = 'block';
+  q('#daySummary').style.opacity = 1;
+  setTimeout(() => {
+    q('#daySummary').style.opacity = 0;
+    q('#summaryOverlay').style.display = 'none';
+  }, 5000);
+
+  // 9) Every 5 days, quiz + achievements
+  if (dayCount % 5 === 0) setTimeout(showQuiz, 600);
+  checkAchievements();
+}
+  updateMoney();
+  updateStats(); updateEcosystemHealth(); updateHealthBar();
+  /* build summary */
+  const sumBody=q('#summaryTable tbody'); sumBody.innerHTML='';
+  for(const [name,delta] of Object.entries(lastChanges)){
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${name}</td><td style="color:${delta>0?'green':'red'};text-align:right;">${delta>0?'+':''}${delta}</td>`;
+    sumBody.appendChild(row);
+  }
+  q('#summaryOverlay').style.display='block'; q('#daySummary').style.opacity=1;
+  setTimeout(()=>{q('#daySummary').style.opacity=0;q('#summaryOverlay').style.display='none';},5000);
+  if(dayCount%5===0) setTimeout(showQuiz,600);
+  checkAchievements();
+
+function updateEcosystemHealth(){
+  const h=getTotal('Herbivore'), p=getTotal('Predator');
+  const ratio = p>0? h/p : h;   // very rough balance metric
+  ecosystemHealth += ratio>2? -5 : ratio<1? -5 : +5;
+  ecosystemHealth = Math.max(0,Math.min(100,ecosystemHealth));
+}
+function getTotal(t){return Object.entries(populations).filter(([s])=>speciesData[s].type===t).reduce((a,[_,c])=>a+c,0);}
+
+/*────────── MODE SELECT & RESET ───────*/
+document.querySelectorAll('#modeSelect button').forEach(btn=>{
+  btn.onclick=()=>{
+    gameMode=btn.dataset.mode;
+    q('#modeSelect').style.display='none';
+    q('#gameArea').style.display='block';
+    q('#welcome').innerText = gameMode==='kids'  ? 'Welcome, Little Explorer!' :
+                               gameMode==='youth' ? 'Welcome, Young Naturalist!' :
+                               'Welcome, Ecosystem Enthusiast!';
+    renderMyVideos(); renderRolesInfra(); updateMoney();
+  };
+});
+q('#resetGame').onclick=()=>location.reload();
+
+/*────────── YOUTUBE THUMBS ────────────*/
+function renderMyVideos(){
+  const box=q('#myVideos'); box.innerHTML='';
+  videoURLs.forEach(id=>{
+    const ifr=document.createElement('iframe');
+    ifr.width=200; ifr.height=113; ifr.src=`https://www.youtube.com/embed/${id}`;
+    ifr.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"; ifr.allowFullscreen=true;
+    box.appendChild(ifr);
+  });
+}
+
+/*────────── INIT ──────────────────────*/
+window.addEventListener('load',()=>{renderRolesInfra();updateMoney();});
+</script>
+</body>
+</html>
